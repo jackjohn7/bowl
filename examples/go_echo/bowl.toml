@@ -1,0 +1,8 @@
+[template]
+name = "Go Echo"
+version = "1.0.0"
+source = "github.com/<user>/<repo>"
+
+[options]
+ignore = ["go.sum"]
+

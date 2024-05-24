@@ -1,4 +1,4 @@
-use std::fs;
+use std::{fs, path::Path, process::exit};
 
 use clap::Parser;
 
@@ -17,9 +17,15 @@ pub fn handle_check(_command: CheckArgs) {
         Ok(content) => content,
         Err(err) => {
             println!("Error parsing bowl.toml: {}", err.to_string());
-            panic!()
+            exit(1)
         }
     };
+
+    if !Path::new(&config.options.readme).exists() {
+        println!("Error: ReadMe file \"{}\" not found", config.options.readme);
+        println!("The path of this readme file can be set with the \"readme\" option in bowl.toml");
+        exit(1)
+    }
 
     dbg!(config);
 
