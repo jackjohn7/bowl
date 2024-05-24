@@ -1,0 +1,7 @@
+[template]
+name = "Example"
+version = "1.0.0"
+source = "github.com/<user>/<repo>"
+
+[options]
+ignore = []
