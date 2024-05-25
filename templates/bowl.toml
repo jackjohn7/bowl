@@ -1,0 +1,4 @@
+[template]
+name = {{BOWL_NAME}}
+version = "1.0.0"
+source = "github.com/<user>/<repo>"

@@ -11,7 +11,13 @@ pub struct CheckArgs {}
 /// Checks that a user's configuration is valid
 pub fn handle_check(_command: CheckArgs) {
     // check for bowl.toml file
-    let contents = fs::read_to_string("bowl.toml").expect("Should have been able to read the file");
+    let contents = match fs::read_to_string("bowl.toml") {
+        Ok(contents) => contents,
+        Err(_) => {
+            println!("Couldn't find bowl.toml");
+            exit(1)
+        }
+    };
 
     let config: Config = match toml::from_str(&contents) {
         Ok(content) => content,
