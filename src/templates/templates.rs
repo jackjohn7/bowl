@@ -1,3 +1,12 @@
+//! This file contains information about the encoding of Bowl files
+//!
+//! The encoding is as follows (capitalized means constant mapped to u8):
+//!
+//! BOWLFILE: BOWL + VERSION + F1 + F2 + F3 + ...
+//! FILE IN BOWLFILE: BOWL + FILE + <filename> + CONTENT + <escaped file contents>.
+//!
+//! *NOTE: This module will likely be broken into multiple later on*
+
 use std::path::PathBuf;
 
 const ESC_CHAR: u8 = 0xFF;
@@ -6,7 +15,7 @@ const FILE_CHAR: u8 = 0x9C;
 const CONTENT_CHAR: u8 = 0x9E;
 const VERSION_CHAR: u8 = 0xA0;
 
-const _CURRENT_VERSION: u16 = 0;
+const CURRENT_VERSION: &'static str = "0";
 
 /// Represents the parsed version of a bowl template
 pub struct BowlFile {
@@ -69,7 +78,7 @@ pub fn escape_content(content: String) -> Vec<u8> {
     result
 }
 
-/// Reverts the escaping of special characters
+/// Reverts the escaping of bowl characters
 pub fn unescape_content(content: Vec<u8>) -> String {
     let mut result = Vec::new();
     let mut i = 0;
@@ -94,18 +103,24 @@ pub fn unescape_content(content: Vec<u8>) -> String {
 }
 
 /// Encode the files provided in the bowl format.
-///
-/// *Format is in the works. This may be outdated*
-///
-/// ```
-/// ----- src/main.rs
-/// *ESCAPED FILE CONTENT*
-/// ----- README.md
-/// *ESCAPED FILE CONTENT*
-/// ...
-/// ```
-pub fn encode_content(_files: BowlFile) -> Vec<u8> {
-    todo!()
+pub fn encode_content(file: BowlFile) -> Vec<u8> {
+    let mut result = Vec::new();
+
+    result.push(BOWL_CHAR);
+    result.push(VERSION_CHAR);
+    for b in CURRENT_VERSION.as_bytes() {
+        result.push(*b);
+    }
+    for f in file.files {
+        result.push(FILE_CHAR);
+        for c in f.file_path.as_bytes() {
+            result.push(*c);
+        }
+        result.push(CONTENT_CHAR);
+        result.append(&mut escape_content(f.content));
+    }
+
+    result
 }
 
 ///
