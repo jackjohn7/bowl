@@ -28,6 +28,26 @@ impl BowlFile {
     pub fn from_string(_raw: String) -> BowlFile {
         todo!()
     }
+    /// Encode the files provided in the bowl format.
+    pub fn encode(self) -> Vec<u8> {
+        let mut result = Vec::new();
+
+        result.push(BOWL_CHAR);
+        result.push(VERSION_CHAR);
+        for b in CURRENT_VERSION.as_bytes() {
+            result.push(*b);
+        }
+        for f in self.files {
+            result.push(FILE_CHAR);
+            for c in f.file_path.as_bytes() {
+                result.push(*c);
+            }
+            result.push(CONTENT_CHAR);
+            result.append(&mut escape_content(f.content));
+        }
+
+        result
+    }
 }
 
 pub struct FileContent {
@@ -102,28 +122,122 @@ pub fn unescape_content(content: Vec<u8>) -> String {
     String::from_utf8(result).expect("Found invalid UTF-8")
 }
 
-/// Encode the files provided in the bowl format.
-pub fn encode_content(file: BowlFile) -> Vec<u8> {
-    let mut result = Vec::new();
-
-    result.push(BOWL_CHAR);
-    result.push(VERSION_CHAR);
-    for b in CURRENT_VERSION.as_bytes() {
-        result.push(*b);
-    }
-    for f in file.files {
-        result.push(FILE_CHAR);
-        for c in f.file_path.as_bytes() {
-            result.push(*c);
-        }
-        result.push(CONTENT_CHAR);
-        result.append(&mut escape_content(f.content));
-    }
-
-    result
-}
-
 ///
 pub fn decode_content(_raw: String) -> BowlFile {
     todo!()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn test_encode_content() {
+        let bf = BowlFile {
+            version: CURRENT_VERSION.parse::<u16>().unwrap(),
+            files: vec![
+                FileContent {
+                    file_path: "README.md".into(),
+                    content: "# My epic readme\nGamer".into(),
+                },
+                FileContent {
+                    file_path: "src/main.rs".into(),
+                    content: "pub fn main() {println!(\"Hello, world\")}".into(),
+                },
+            ],
+        };
+
+        let expected = vec![
+            BOWL_CHAR,
+            VERSION_CHAR,
+            48,
+            FILE_CHAR,
+            82,
+            69,
+            65,
+            68,
+            77,
+            69,
+            46,
+            109,
+            100,
+            CONTENT_CHAR,
+            35,
+            32,
+            77,
+            121,
+            32,
+            101,
+            112,
+            105,
+            99,
+            32,
+            114,
+            101,
+            97,
+            100,
+            109,
+            101,
+            10,
+            71,
+            97,
+            109,
+            101,
+            114,
+            FILE_CHAR,
+            115,
+            114,
+            99,
+            47,
+            109,
+            97,
+            105,
+            110,
+            46,
+            114,
+            115,
+            CONTENT_CHAR,
+            112,
+            117,
+            98,
+            32,
+            102,
+            110,
+            32,
+            109,
+            97,
+            105,
+            110,
+            40,
+            41,
+            32,
+            123,
+            112,
+            114,
+            105,
+            110,
+            116,
+            108,
+            110,
+            33,
+            40,
+            34,
+            72,
+            101,
+            108,
+            108,
+            111,
+            44,
+            32,
+            119,
+            111,
+            114,
+            108,
+            100,
+            34,
+            41,
+            125,
+        ];
+
+        assert_eq!(bf.encode(), expected);
+    }
 }
