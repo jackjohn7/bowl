@@ -82,7 +82,8 @@ have something similar to this:
 #  template. They will not be included in your project when it is
 #  cloned down with the `init` command though.
 branches = [
-    { has = "go", script = "bowl/scripts/add.go", exec = "go run" },
+    { has = "go", script = "bowl/scripts/add.go", exec = "go run {{script}} {{...args}}" },
+    { has = "rustc", script = "bowl/scripts/add.rs",  build = "rustc -C opt-level=3 {{script}}" },
     { has = "node", script = "bowl/scripts/add.js" },
     { has = "deno", script = "bowl/scripts/add.js" },
     { has = "bun", script = "bowl/scripts/add.js" },
@@ -95,3 +96,5 @@ branches = [
 # the project template. A JS project likely implies that the user has
 # some sort of js runtime.
 ```
+
+These external scripts/programs will make it much easier
