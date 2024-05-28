@@ -4,15 +4,39 @@ This document tracks implementation ideas that I've come up
 with for solving potential problems getting us closer to the
 proposed application in the README.md.
 
-# Commands
+## Bowl directory
 
-## bowl.toml to add commands in the following format:
+The bowl directory is included in the bowl file, but not 
+cloned when the user uses `bowl init`.
+
+## Bowl.lock
+
+Perhaps a bowl.lock file should be created optionally when
+you use a template. If you don't it'd be difficult to tell
+what version of the template you're using and make it nearly
+impossible to match your version with that version's set of
+commands after that template has been updated.
+
+## Commands
+
+I don't generally like the idea of running arbitrary code on 
+someone's computer, but it's user initiated, and I don't see
+how it could be done by accident. Templates should be 
+moderated to help prevent malicious use of this feature, but
+in general, the onus is on the user here. The javascript
+world has a similar situation with npx as far as I can tell.
+
+After using a command, the command is cached on your system
+to be used later to minimize server load and preserve
+consistent behavior. You can clear the cache to ensure you 
+have the latest command if you want. 
+
+### bowl.toml to add commands in the following format:
+
 ```toml
 [command.add]
 # This example uses arbitrary npm commands to facilitate this
-# Realistically, you could do anything with this. I don't love it,
-# but it could work. The JS ecosystem has a similar pattern with 
-# npx.
+# Realistically, you could do anything with this.
 args = [
     # Declarative matching on arguments provided
     {
