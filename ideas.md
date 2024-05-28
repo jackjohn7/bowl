@@ -61,7 +61,7 @@ branches = [
     { has = "go", script = "bowl/scripts/add.go", exec = "go run" },
     { has = "node", script = "bowl/scripts/add.js" },
     { has = "deno", script = "bowl/scripts/add.js" },
-    { has = "bun", script = "bowl/scripts/add.js" }
+    { has = "bun", script = "bowl/scripts/add.js" },
     { has = "python3", script = "bowl/scripts/add.py" }
     # These are tried in order. If a user has none of these required
     # technologies, the user is informed that they should install
