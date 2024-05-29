@@ -1,39 +1,65 @@
-use std::{fs, path::Path, process::exit};
+use std::{
+    fs::{self, DirEntry},
+    path::{Path, PathBuf},
+    process::exit,
+};
 
 use clap::Parser;
 
-use crate::templates::config::Config;
+use crate::{
+    files::file_entries,
+    templates::{
+        config::Config,
+        templates::{BowlFile, FileContent},
+    },
+};
 
 /// Arguments provided to the check command
 #[derive(Parser, Debug)]
 pub struct CheckArgs {}
 
 /// Checks that a user's configuration is valid
-pub fn handle_check(_command: CheckArgs) {
+pub fn handle_check(_command: CheckArgs) -> Result<(), String> {
     // check for bowl.toml file
     let contents = match fs::read_to_string("bowl.toml") {
         Ok(contents) => contents,
         Err(_) => {
-            println!("Couldn't find bowl.toml");
-            exit(1)
+            return Err("Couldn't find bowl.toml".into());
         }
     };
 
-    let config: Config = match toml::from_str(&contents) {
-        Ok(content) => content,
-        Err(err) => {
-            println!("Error parsing bowl.toml: {}", err.to_string());
-            exit(1)
-        }
-    };
+    let config: Config = toml::from_str(&contents)
+        .map_err(|e| format!("Error parsing bowl.toml: {}", e.to_string()))?;
 
     if !Path::new(&config.options.readme).exists() {
-        println!("Error: ReadMe file \"{}\" not found", config.options.readme);
-        println!("The path of this readme file can be set with the \"readme\" option in bowl.toml");
-        exit(1)
+        return Err(format!(
+            "Error: ReadMe file \"{}\" not found\nThe path of this \
+                    readme file can be set with the \"readme\" option in bowl.toml",
+            config.options.readme
+        ));
     }
+
+    let files = fs::read_dir(".")
+        .map_err(|e| e.to_string())?
+        .map(|x| x.map_err(|e| e.to_string()))
+        .collect::<Result<Vec<DirEntry>, String>>()?
+        .into_iter()
+        .map(|x| file_entries(x))
+        .flatten()
+        .map(|x| x.path())
+        .filter(|x| match config.options.ignore.clone() {
+            Some(ignore) => !ignore.contains(&x.to_str().unwrap().to_owned()),
+            None => true,
+        })
+        .map(|x| FileContent::from_path(x))
+        .collect::<Result<Vec<FileContent>, String>>()?;
+
+    let bf = BowlFile::new(dbg!(files));
+
+    let _ = bf.encode();
 
     dbg!(config);
 
     println!("Check succeeded!");
+    Ok(())
 }

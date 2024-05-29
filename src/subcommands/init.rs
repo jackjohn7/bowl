@@ -9,6 +9,6 @@ pub struct InitArgs {
 
 /// create project from boilerplate code provided in
 /// the template argument
-pub fn handle_init(_command: InitArgs) {
+pub fn handle_init(_command: InitArgs) -> Result<(), String> {
     todo!()
 }

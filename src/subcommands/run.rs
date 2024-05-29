@@ -10,7 +10,7 @@ pub struct RunArgs {
 }
 
 /// Run the user's specified command provided by the template
-pub fn handle_run(command: RunArgs) {
+pub fn handle_run(command: RunArgs) -> Result<(), String> {
     println!("{} {}", command.cmd[0], command.cmd[1]);
     todo!()
 }

@@ -7,7 +7,7 @@
 //!
 //! *NOTE: This module will likely be broken into multiple later on*
 
-use std::path::PathBuf;
+use std::{fs, path::PathBuf};
 
 const ESC_CHAR: u8 = 0xFF;
 const BOWL_CHAR: u8 = 0x9A;
@@ -19,11 +19,18 @@ const CURRENT_VERSION: &'static str = "0";
 
 /// Represents the parsed version of a bowl template
 pub struct BowlFile {
-    pub version: u16,
+    pub version: String,
     pub files: Vec<FileContent>,
 }
 
 impl BowlFile {
+    pub fn new(files: Vec<FileContent>) -> Self {
+        Self {
+            version: CURRENT_VERSION.to_owned(),
+            files,
+        }
+    }
+
     /// Parse a BowlFile from string
     pub fn from_string(_raw: String) -> BowlFile {
         todo!()
@@ -50,6 +57,7 @@ impl BowlFile {
     }
 }
 
+#[derive(Debug)]
 pub struct FileContent {
     /// File path relative to the caller
     pub file_path: String,
@@ -58,8 +66,10 @@ pub struct FileContent {
 }
 
 impl FileContent {
-    pub fn from_path(_path: PathBuf) {
-        todo!()
+    pub fn from_path(path: PathBuf) -> Result<Self, String> {
+        let file_path = path.clone().to_str().unwrap().to_owned();
+        let content = fs::read_to_string(path).map_err(|e| e.to_string())?;
+        Ok(Self { file_path, content })
     }
 }
 
@@ -133,7 +143,7 @@ mod tests {
     #[test]
     fn test_encode_content() {
         let bf = BowlFile {
-            version: CURRENT_VERSION.parse::<u16>().unwrap(),
+            version: CURRENT_VERSION.to_owned(),
             files: vec![
                 FileContent {
                     file_path: "README.md".into(),

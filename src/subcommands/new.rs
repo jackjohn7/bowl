@@ -25,14 +25,12 @@ pub struct NewArgs {
 /// Create an empty bowl project with a bowl.toml file within
 /// and a git repository created unless specified otherwise
 /// or user doesn't have git.
-pub fn handle_new(cmd: NewArgs) {
+pub fn handle_new(cmd: NewArgs) -> Result<(), String> {
     if !cmd.no_git {
-        match Command::new("git").arg("init").output() {
-            Ok(_) => (),
-            Err(_) => {
-                println!("Could not initialize git repository");
-                exit(1)
-            }
+        if let Err(_) = Command::new("git").arg("init").output() {
+            return Err(
+                "Could not initialize git repository. HINT: use --no-git flag to disable".into(),
+            );
         }
     }
 
@@ -50,14 +48,15 @@ pub fn handle_new(cmd: NewArgs) {
         .with_default("bowl.md")
         .with_placeholder("bowl.md")
         .prompt()
-        .unwrap();
+        .map_err(|e| e.to_string())?;
 
     // create md file
-    let mut md = File::create(md_file).unwrap();
+    let mut md = File::create(md_file).map_err(|e| e.to_string())?;
     md.write(
         MD_TEMPLATE
             .replace("{{BOWL_NAME}}", &project_name)
             .as_bytes(),
     )
-    .unwrap();
+    .map_err(|e| e.to_string())?;
+    Ok(())
 }
