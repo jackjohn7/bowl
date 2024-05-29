@@ -18,7 +18,7 @@ fn main() {
         args::Command::Check(args) => handle_check(args),
         args::Command::Save => todo!(),
     } {
-        println!("{}", e.to_string());
+        println!("{}", e);
         exit(1);
     }
 }

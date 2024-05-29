@@ -1,7 +1,6 @@
 use std::{
     fs::{self, DirEntry},
-    path::{Path, PathBuf},
-    process::exit,
+    path::Path,
 };
 
 use clap::Parser;
@@ -28,8 +27,8 @@ pub fn handle_check(_command: CheckArgs) -> Result<(), String> {
         }
     };
 
-    let config: Config = toml::from_str(&contents)
-        .map_err(|e| format!("Error parsing bowl.toml: {}", e.to_string()))?;
+    let config: Config =
+        toml::from_str(&contents).map_err(|e| format!("Error parsing bowl.toml: {}", e))?;
 
     if !Path::new(&config.options.readme).exists() {
         return Err(format!(
@@ -44,14 +43,16 @@ pub fn handle_check(_command: CheckArgs) -> Result<(), String> {
         .map(|x| x.map_err(|e| e.to_string()))
         .collect::<Result<Vec<DirEntry>, String>>()?
         .into_iter()
-        .map(|x| file_entries(x))
+        .map(file_entries)
+        .collect::<Result<Vec<Vec<DirEntry>>, String>>()?
+        .into_iter()
         .flatten()
         .map(|x| x.path())
         .filter(|x| match config.options.ignore.clone() {
             Some(ignore) => !ignore.contains(&x.to_str().unwrap().to_owned()),
             None => true,
         })
-        .map(|x| FileContent::from_path(x))
+        .map(FileContent::from_path)
         .collect::<Result<Vec<FileContent>, String>>()?;
 
     let bf = BowlFile::new(dbg!(files));

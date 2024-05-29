@@ -1,8 +1,4 @@
-use std::{
-    fs::File,
-    io::prelude::*,
-    process::{exit, Command},
-};
+use std::{fs::File, io::prelude::*, process::Command};
 
 use clap::Parser;
 use inquire::Text;
@@ -26,12 +22,10 @@ pub struct NewArgs {
 /// and a git repository created unless specified otherwise
 /// or user doesn't have git.
 pub fn handle_new(cmd: NewArgs) -> Result<(), String> {
-    if !cmd.no_git {
-        if let Err(_) = Command::new("git").arg("init").output() {
-            return Err(
-                "Could not initialize git repository. HINT: use --no-git flag to disable".into(),
-            );
-        }
+    if !cmd.no_git && Command::new("git").arg("init").output().is_err() {
+        return Err(
+            "Could not initialize git repository. HINT: use --no-git flag to disable".into(),
+        );
     }
 
     // ask user for project name

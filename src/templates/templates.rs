@@ -15,7 +15,7 @@ const FILE_CHAR: u8 = 0x9C;
 const CONTENT_CHAR: u8 = 0x9E;
 const VERSION_CHAR: u8 = 0xA0;
 
-const CURRENT_VERSION: &'static str = "0";
+const CURRENT_VERSION: &str = "0";
 
 /// Represents the parsed version of a bowl template
 pub struct BowlFile {

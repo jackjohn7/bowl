@@ -1,19 +1,17 @@
 use std::fs::{self, DirEntry};
 
-pub fn file_entries(entry: DirEntry) -> Vec<DirEntry> {
+pub fn file_entries(entry: DirEntry) -> Result<Vec<DirEntry>, String> {
     if entry.metadata().unwrap().is_dir() {
-        fs::read_dir(entry.path())
-            .map_err(|e| e.to_string())
-            .unwrap()
+        Ok(fs::read_dir(entry.path())
+            .map_err(|e| e.to_string())?
             .map(|x| x.map_err(|e| e.to_string()))
-            .collect::<Result<Vec<DirEntry>, String>>()
-            .unwrap()
+            .collect::<Result<Vec<DirEntry>, String>>()?
             .into_iter()
-            .map(file_entries)
+            .flat_map(file_entries)
             .flatten()
-            .collect::<Vec<DirEntry>>()
+            .collect::<Vec<DirEntry>>())
     } else {
-        vec![entry]
+        Ok(vec![entry])
     }
 }
 
