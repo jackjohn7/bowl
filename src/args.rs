@@ -1,18 +1,22 @@
 use clap::Parser;
 
-use crate::subcommands::{check::CheckArgs, init::InitArgs, new::NewArgs, run::RunArgs};
+use crate::subcommands::{
+    check::CheckArgs, init::UseArgs, new::NewArgs, publish::PublishArgs, run::RunArgs,
+};
 
 /// All subcommands available to the user
 #[derive(Parser, Debug)]
 pub enum Command {
     /// Create a new project from template
-    Init(InitArgs),
+    Use(UseArgs),
     /// Execute subcommand from template
     Run(RunArgs),
     /// Create a new bowl template
     New(NewArgs),
     /// Checks that your bowl template is valid
     Check(CheckArgs),
+    /// Checks that your bowl template is valid and publishes it
+    Publish(PublishArgs),
     /// Saves a template locally without publishing it
     Save,
 }
