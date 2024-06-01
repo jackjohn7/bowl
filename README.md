@@ -1,5 +1,7 @@
 # Bowl.rs
 
+![hand-drawn graphic of a bowl](assets/bowl.png)
+
 This is a **WIP**. Some things here are just my musings about
 what the project *should* be rather than what it is at this
 current time. I believe this is a cool idea, and I'd like to 
