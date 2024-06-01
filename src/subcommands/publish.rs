@@ -63,8 +63,6 @@ pub fn handle_publish(cmd: PublishArgs) -> Result<(), String> {
         .map(FileContent::from_path)
         .collect::<Result<Vec<FileContent>, String>>()?;
 
-    dbg!(&files);
-
     let bf = BowlFile::new(files);
 
     let bytes = bf.encode();
