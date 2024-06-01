@@ -113,6 +113,8 @@ impl BowlFile {
             }
         }
 
+        // TODO: validate that the version is actually in form X.X.X
+
         Ok(Self { version, files })
     }
 
@@ -223,7 +225,7 @@ mod tests {
 
     use super::*;
     #[test]
-    fn test_encode_content() {
+    fn test_encode_decode_content() {
         let bf = BowlFile {
             version: CURRENT_VERSION.to_owned(),
             files: vec![
