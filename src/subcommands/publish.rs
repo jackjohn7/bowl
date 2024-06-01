@@ -8,10 +8,7 @@ use clap::Parser;
 
 use crate::{
     files::file_entries,
-    templates::{
-        config::Config,
-        templates::{BowlFile, FileContent},
-    },
+    templates::{bowlfile::BowlFile, config::Config, files::FileContent},
 };
 
 /// Arguments to be passed when running publish command
@@ -66,11 +63,11 @@ pub fn handle_publish(cmd: PublishArgs) -> Result<(), String> {
     if let Some(out) = cmd.output {
         // if user provided a directory, save it as <name>.bowl in that dir
         // if the user provides a full filepath, save it at that path
-        let mut file = File::create(out).map_err(|e| format!("Error: {}", e.to_string()))?;
+        let mut file = File::create(out).map_err(|e| format!("Error: {}", e))?;
 
         let _ = file
             .write_all(&bytes)
-            .map_err(|e| format!("Failed to write bowlfile: {}", e.to_string()));
+            .map_err(|e| format!("Failed to write bowlfile: {}", e));
     } else {
         // TODO: should be pushed to soup registry
     }

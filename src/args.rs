@@ -1,7 +1,7 @@
 use clap::Parser;
 
 use crate::subcommands::{
-    check::CheckArgs, init::UseArgs, new::NewArgs, publish::PublishArgs, run::RunArgs,
+    check::CheckArgs, new::NewArgs, publish::PublishArgs, run::RunArgs, use_cmd::UseArgs,
 };
 
 /// All subcommands available to the user

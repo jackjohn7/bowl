@@ -13,6 +13,6 @@ pub struct UseArgs {
 
 /// create project from boilerplate code provided in
 /// the template argument
-pub fn handle_use(_command: UseArgs) -> Result<(), String> {
+pub fn handle_use(_cmd: UseArgs) -> Result<(), String> {
     todo!()
 }

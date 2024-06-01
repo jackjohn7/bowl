@@ -8,8 +8,8 @@ use std::process::exit;
 use args::Cli;
 use clap::Parser;
 use subcommands::{
-    check::handle_check, init::handle_use, new::handle_new, publish::handle_publish,
-    run::handle_run,
+    check::handle_check, new::handle_new, publish::handle_publish, run::handle_run,
+    use_cmd::handle_use,
 };
 
 fn main() {

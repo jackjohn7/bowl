@@ -7,10 +7,7 @@ use clap::Parser;
 
 use crate::{
     files::file_entries,
-    templates::{
-        config::Config,
-        templates::{BowlFile, FileContent},
-    },
+    templates::{bowlfile::BowlFile, config::Config, files::FileContent},
 };
 
 /// Arguments provided to the check command
