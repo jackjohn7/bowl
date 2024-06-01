@@ -1,6 +1,6 @@
 use clap::Parser;
 
-use crate::subcommands::{init::InitArgs, new::NewArgs, run::RunArgs, check::CheckArgs};
+use crate::subcommands::{check::CheckArgs, init::InitArgs, new::NewArgs, run::RunArgs};
 
 /// All subcommands available to the user
 #[derive(Parser, Debug)]

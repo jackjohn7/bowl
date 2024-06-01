@@ -6,6 +6,7 @@
 //! FILE IN BOWLFILE: BOWL + FILE + <filename> + CONTENT + <escaped file contents>.
 //!
 //! *NOTE: This module will likely be broken into multiple later on*
+//! For example, I want to create separate files for versions of the BowlFile
 
 use std::{fs, path::PathBuf};
 
@@ -15,12 +16,21 @@ const FILE_CHAR: u8 = 0x9C;
 const CONTENT_CHAR: u8 = 0x9E;
 const VERSION_CHAR: u8 = 0xA0;
 
-const CURRENT_VERSION: &str = "0";
+const CURRENT_VERSION: &str = "0.0.1";
 
 /// Represents the parsed version of a bowl template
+#[derive(Debug, Clone)]
 pub struct BowlFile {
     pub version: String,
     pub files: Vec<FileContent>,
+}
+
+#[derive(Clone)]
+enum DecodeState {
+    Reading,
+    ReadingVersionNum(i32),
+    ReadingFileName,
+    ReadingFileContent,
 }
 
 impl BowlFile {
@@ -31,12 +41,88 @@ impl BowlFile {
         }
     }
 
+    /// Parse a BowlFile
+    /// NOTE: This may be a good use case for Nom
+    pub fn decode(raw: Vec<u8>) -> Result<Self, &'static str> {
+        let mut version = String::new();
+        let mut files = Vec::new();
+        let mut bytes = raw.as_slice();
+        let mut reading_state = DecodeState::Reading;
+        let mut file_path = String::new();
+        let mut file_content = Vec::new();
+        loop {
+            match (bytes, reading_state.clone()) {
+                ([x, FILE_CHAR, rest @ ..], DecodeState::ReadingVersionNum(2))
+                    if *x != ESC_CHAR =>
+                {
+                    version.push(*x as char);
+                    reading_state = DecodeState::ReadingFileName;
+                    bytes = rest;
+                }
+                ([x @ 46, rest @ ..], DecodeState::ReadingVersionNum(y)) => {
+                    reading_state = DecodeState::ReadingVersionNum(y + 1);
+                    version.push(*x as char);
+                    bytes = rest;
+                }
+                ([x, rest @ ..], DecodeState::ReadingVersionNum(_)) => {
+                    version.push(*x as char);
+                    bytes = rest;
+                }
+                ([BOWL_CHAR, VERSION_CHAR, rest @ ..], DecodeState::Reading) => {
+                    reading_state = DecodeState::ReadingVersionNum(0);
+                    bytes = rest;
+                }
+                ([x, FILE_CHAR, rest @ ..], DecodeState::Reading) if *x != ESC_CHAR => {
+                    reading_state = DecodeState::ReadingFileName;
+                    bytes = rest;
+                }
+                ([x, CONTENT_CHAR, rest @ ..], DecodeState::ReadingFileName) if *x != ESC_CHAR => {
+                    file_path.push(*x as char);
+                    reading_state = DecodeState::ReadingFileContent;
+                    bytes = rest;
+                }
+                ([x, rest @ ..], DecodeState::ReadingFileName) => {
+                    file_path.push(*x as char);
+                    bytes = rest;
+                }
+                ([x, FILE_CHAR, rest @ ..], DecodeState::ReadingFileContent) if *x != ESC_CHAR => {
+                    file_content.push(*x);
+                    files.push(FileContent {
+                        file_path: file_path.clone(),
+                        content: unescape_content(file_content.clone()),
+                    });
+                    file_path = String::new();
+                    file_content = Vec::new();
+                    bytes = rest;
+                    reading_state = DecodeState::ReadingFileName;
+                }
+                ([x, rest @ ..], DecodeState::ReadingFileContent) => {
+                    file_content.push(*x);
+                    bytes = rest;
+                }
+                ([], DecodeState::ReadingFileContent) => {
+                    files.push(FileContent {
+                        file_path: file_path.clone(),
+                        content: unescape_content(file_content.clone()),
+                    });
+                    break;
+                }
+                _ => {
+                    return Err("Invalid bowl file provided");
+                }
+            }
+        }
+
+        Ok(Self { version, files })
+    }
+
     /// Parse a BowlFile from string
-    pub fn from_string(_raw: String) -> BowlFile {
+    pub fn from_string(_raw: String) -> Self {
         todo!()
     }
+
     /// Encode the files provided in the bowl format.
-    pub fn encode(self) -> Vec<u8> {
+    pub fn encode(&self) -> Vec<u8> {
         let mut result = Vec::new();
 
         result.push(BOWL_CHAR);
@@ -44,7 +130,7 @@ impl BowlFile {
         for b in CURRENT_VERSION.as_bytes() {
             result.push(*b);
         }
-        for f in self.files {
+        for f in self.files.clone() {
             result.push(FILE_CHAR);
             for c in f.file_path.as_bytes() {
                 result.push(*c);
@@ -57,27 +143,27 @@ impl BowlFile {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct FileContent {
     /// File path relative to the caller
     pub file_path: String,
     /// The inescaped content of the file
-    pub content: String,
+    pub content: Vec<u8>,
 }
 
 impl FileContent {
     pub fn from_path(path: PathBuf) -> Result<Self, String> {
         let file_path = path.clone().to_str().unwrap().to_owned();
-        let content = fs::read_to_string(path).map_err(|e| e.to_string())?;
+        let content = fs::read(path).map_err(|e| e.to_string())?;
         Ok(Self { file_path, content })
     }
 }
 
 /// Replace bowl char sequences with escaped ones to avoid
 /// problems in decoding
-pub fn escape_content(content: String) -> Vec<u8> {
+pub fn escape_content(content: Vec<u8>) -> Vec<u8> {
     let mut result = Vec::new();
-    let bytes = content.as_bytes();
+    let bytes = content.as_slice();
 
     for &byte in bytes {
         match byte {
@@ -109,7 +195,7 @@ pub fn escape_content(content: String) -> Vec<u8> {
 }
 
 /// Reverts the escaping of bowl characters
-pub fn unescape_content(content: Vec<u8>) -> String {
+pub fn unescape_content(content: Vec<u8>) -> Vec<u8> {
     let mut result = Vec::new();
     let mut i = 0;
 
@@ -129,16 +215,12 @@ pub fn unescape_content(content: Vec<u8>) -> String {
         }
     }
 
-    String::from_utf8(result).expect("Found invalid UTF-8")
-}
-
-///
-pub fn decode_content(_raw: String) -> BowlFile {
-    todo!()
+    result
 }
 
 #[cfg(test)]
 mod tests {
+
     use super::*;
     #[test]
     fn test_encode_content() {
@@ -160,6 +242,10 @@ mod tests {
             BOWL_CHAR,
             VERSION_CHAR,
             48,
+            46,
+            48,
+            46,
+            49,
             FILE_CHAR,
             82,
             69,
@@ -249,5 +335,129 @@ mod tests {
         ];
 
         assert_eq!(bf.encode(), expected);
+        let nbf = BowlFile::decode(expected).unwrap();
+
+        assert_eq!(bf.files.len(), nbf.files.len());
+        for i in 0..bf.files.len() {
+            assert_eq!(bf.files[i].file_path, nbf.files[i].file_path);
+            assert_eq!(bf.files[i].content, nbf.files[i].content);
+        }
+    }
+
+    #[test]
+    fn test_escape_unescape_content() {
+        // Test cases
+        let test_cases = vec![
+            (vec![], vec![]),                       // Empty input
+            (b"hello".to_vec(), b"hello".to_vec()), // No special characters
+            (
+                vec![
+                    b'h', b'e', b'l', b'l', b'o', b' ', ESC_CHAR, b' ', b'w', b'o', b'r', b'l',
+                    b'd',
+                ],
+                vec![
+                    b'h', b'e', b'l', b'l', b'o', b' ', ESC_CHAR, ESC_CHAR, b' ', b'w', b'o', b'r',
+                    b'l', b'd',
+                ],
+            ), // Contains ESC_CHAR
+            (
+                vec![
+                    b'b', b'o', b'w', b'l', b' ', BOWL_CHAR, b' ', b'c', b'h', b'a', b'r',
+                ],
+                vec![
+                    b'b', b'o', b'w', b'l', b' ', ESC_CHAR, BOWL_CHAR, b' ', b'c', b'h', b'a', b'r',
+                ],
+            ), // Contains BOWL_CHAR
+            (
+                vec![
+                    b'f', b'i', b'l', b'e', b' ', FILE_CHAR, b' ', b'c', b'h', b'a', b'r',
+                ],
+                vec![
+                    b'f', b'i', b'l', b'e', b' ', ESC_CHAR, FILE_CHAR, b' ', b'c', b'h', b'a', b'r',
+                ],
+            ), // Contains FILE_CHAR
+            (
+                vec![
+                    b'c',
+                    b'o',
+                    b'n',
+                    b't',
+                    b'e',
+                    b'n',
+                    b't',
+                    b' ',
+                    CONTENT_CHAR,
+                    b' ',
+                    b'c',
+                    b'h',
+                    b'a',
+                    b'r',
+                ],
+                vec![
+                    b'c',
+                    b'o',
+                    b'n',
+                    b't',
+                    b'e',
+                    b'n',
+                    b't',
+                    b' ',
+                    ESC_CHAR,
+                    CONTENT_CHAR,
+                    b' ',
+                    b'c',
+                    b'h',
+                    b'a',
+                    b'r',
+                ],
+            ), // Contains CONTENT_CHAR
+            (
+                vec![
+                    b'v',
+                    b'e',
+                    b'r',
+                    b's',
+                    b'i',
+                    b'o',
+                    b'n',
+                    b' ',
+                    VERSION_CHAR,
+                    b' ',
+                    b'c',
+                    b'h',
+                    b'a',
+                    b'r',
+                ],
+                vec![
+                    b'v',
+                    b'e',
+                    b'r',
+                    b's',
+                    b'i',
+                    b'o',
+                    b'n',
+                    b' ',
+                    ESC_CHAR,
+                    VERSION_CHAR,
+                    b' ',
+                    b'c',
+                    b'h',
+                    b'a',
+                    b'r',
+                ],
+            ), // Contains VERSION_CHAR
+        ];
+
+        for (input, expected_escape) in test_cases {
+            let escaped = escape_content(input.clone());
+            assert_eq!(
+                escaped, expected_escape,
+                "Escaping failed for input: {:?}",
+                input
+            );
+
+            let unescaped = unescape_content(escaped);
+            assert_eq!(unescaped, input, "Unescaping failed for input: {:?}", input);
+        }
     }
 }
