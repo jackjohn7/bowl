@@ -1,7 +1,7 @@
 use std::{
     fs::{self, DirEntry, File},
     io::Write,
-    path::Path,
+    path::{Path, PathBuf},
 };
 
 use clap::Parser;
@@ -39,6 +39,16 @@ pub fn handle_publish(cmd: PublishArgs) -> Result<(), String> {
         ));
     }
 
+    let ignore = match &config.options.ignore {
+        Some(ignore) => ignore
+            .iter()
+            .map(|x| PathBuf::from(x))
+            .collect::<Vec<PathBuf>>(),
+        None => Vec::new(),
+    };
+
+    dbg!(&ignore);
+
     let files = fs::read_dir(".")
         .map_err(|e| e.to_string())?
         .map(|x| x.map_err(|e| e.to_string()))
@@ -49,14 +59,13 @@ pub fn handle_publish(cmd: PublishArgs) -> Result<(), String> {
         .into_iter()
         .flatten()
         .map(|x| x.path())
-        .filter(|x| match config.options.ignore.clone() {
-            Some(ignore) => !ignore.contains(&x.to_str().unwrap().to_owned()),
-            None => true,
-        })
+        .filter(|x| !ignore.contains(&x))
         .map(FileContent::from_path)
         .collect::<Result<Vec<FileContent>, String>>()?;
 
-    let bf = BowlFile::new(dbg!(files));
+    dbg!(&files);
+
+    let bf = BowlFile::new(files);
 
     let bytes = bf.encode();
 

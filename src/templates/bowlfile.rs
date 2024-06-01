@@ -82,8 +82,8 @@ impl BowlFile {
                 ([x, FILE_CHAR, rest @ ..], DecodeState::ReadingFileContent) if *x != ESC_CHAR => {
                     file_content.push(*x);
                     files.push(FileContent {
-                        file_path: file_path.clone(),
-                        content: unescape_content(file_content.clone()),
+                        file_path,
+                        content: unescape_content(file_content),
                     });
                     file_path = String::new();
                     file_content = Vec::new();
@@ -96,8 +96,8 @@ impl BowlFile {
                 }
                 ([], DecodeState::ReadingFileContent) => {
                     files.push(FileContent {
-                        file_path: file_path.clone(),
-                        content: unescape_content(file_content.clone()),
+                        file_path,
+                        content: unescape_content(file_content),
                     });
                     break;
                 }

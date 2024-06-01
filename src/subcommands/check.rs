@@ -52,11 +52,9 @@ pub fn handle_check(_command: CheckArgs) -> Result<(), String> {
         .map(FileContent::from_path)
         .collect::<Result<Vec<FileContent>, String>>()?;
 
-    let bf = BowlFile::new(dbg!(files));
+    let bf = BowlFile::new(files);
 
     let _ = bf.encode();
-
-    dbg!(config);
 
     println!("Check succeeded!");
     Ok(())
