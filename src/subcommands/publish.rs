@@ -40,10 +40,7 @@ pub fn handle_publish(cmd: PublishArgs) -> Result<(), String> {
     }
 
     let ignore = match &config.options.ignore {
-        Some(ignore) => ignore
-            .iter()
-            .map(|x| PathBuf::from(x))
-            .collect::<Vec<PathBuf>>(),
+        Some(ignore) => ignore.iter().map(PathBuf::from).collect::<Vec<PathBuf>>(),
         None => Vec::new(),
     };
 
@@ -59,7 +56,7 @@ pub fn handle_publish(cmd: PublishArgs) -> Result<(), String> {
         .into_iter()
         .flatten()
         .map(|x| x.path())
-        .filter(|x| !ignore.contains(&x))
+        .filter(|x| !ignore.contains(x))
         .map(FileContent::from_path)
         .collect::<Result<Vec<FileContent>, String>>()?;
 
@@ -68,9 +65,14 @@ pub fn handle_publish(cmd: PublishArgs) -> Result<(), String> {
     let bytes = bf.encode();
 
     if let Some(out) = cmd.output {
+        let p = PathBuf::from(&out);
+        if let Some(parent) = p.parent() {
+            fs::create_dir_all(parent).map_err(|e| format!("Failed to make directory: {}", e))?;
+        }
+        // is director
         // if user provided a directory, save it as <name>.bowl in that dir
         // if the user provides a full filepath, save it at that path
-        let mut file = File::create(out).map_err(|e| format!("Error: {}", e))?;
+        let mut file = File::create(out).map_err(|e| format!("Error creating bowlfile: {}", e))?;
 
         let _ = file
             .write_all(&bytes)
