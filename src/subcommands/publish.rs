@@ -7,7 +7,7 @@ use std::{
 use clap::Parser;
 
 use crate::{
-    files::{file_entries, save_file},
+    files::{file_entries, save_file_locally},
     templates::{bowlfile::BowlFile, config::Config, files::FileContent},
 };
 
@@ -79,7 +79,7 @@ pub fn handle_publish(cmd: PublishArgs) -> Result<(), String> {
             .write_all(&bytes)
             .map_err(|e| format!("Failed to write bowlfile: {}", e));
     } else if cmd.local {
-        save_file(format!("{}.bowl", config.template.name), bytes)?;
+        save_file_locally(format!("{}.bowl", config.template.name), bytes)?;
     } else {
         // TODO: should be pushed to soup registry (local install only for now)
         todo!("Soup server not built yet")

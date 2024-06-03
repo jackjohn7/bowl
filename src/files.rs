@@ -17,7 +17,7 @@ pub fn file_entries(entry: DirEntry) -> Result<Vec<DirEntry>, String> {
     }
 }
 
-pub fn save_file(filename: String, content: Vec<u8>) -> Result<(), String> {
+pub fn save_file_locally(filename: String, content: Vec<u8>) -> Result<(), String> {
     if let Some(proj_dirs) = ProjectDirs::from("com", "jackjohn7", "bowl") {
         let mut p = proj_dirs.data_dir().to_path_buf();
         fs::create_dir_all(&p).map_err(|e| format!("Failed to make directory: {}", e))?;
@@ -27,6 +27,20 @@ pub fn save_file(filename: String, content: Vec<u8>) -> Result<(), String> {
             .write_all(&content)
             .map_err(|e| format!("Failed to write bowlfile: {}", e))?;
         Ok(())
+    } else {
+        Err("Failed to locate data directory".into())
+    }
+}
+
+pub fn get_file_locally(template: String) -> Result<Vec<u8>, String> {
+    if let Some(proj_dirs) = ProjectDirs::from("com", "jackjohn7", "bowl") {
+        let mut p = proj_dirs.data_dir().to_path_buf();
+        fs::create_dir_all(&p).map_err(|e| format!("Failed to make directory: {}", e))?;
+        p.push(&template);
+        p.set_extension("bowl");
+        dbg!(&p);
+        let content = fs::read(p).map_err(|e| format!("Failed to read bowlfile: {}", e))?;
+        Ok(content)
     } else {
         Err("Failed to locate data directory".into())
     }

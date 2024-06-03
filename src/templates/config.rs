@@ -24,5 +24,5 @@ pub struct Options {
 }
 
 pub fn default_readme() -> String {
-    "bowl.md".into()
+    "./bowl.md".into()
 }

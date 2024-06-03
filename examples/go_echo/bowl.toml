@@ -1,5 +1,5 @@
 [template]
-name = "Go Echo"
+name = "GoEchoTemplate"
 version = "1.0.0"
 source = "github.com/<user>/<repo>"
 

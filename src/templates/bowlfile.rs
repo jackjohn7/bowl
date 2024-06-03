@@ -8,6 +8,9 @@
 //! *NOTE: This module will likely be broken into multiple later on*
 //! For example, I want to create separate files for versions of the BowlFile
 
+use std::str::from_utf8;
+
+use super::config::Config;
 use super::escape::{escape_content, unescape_content};
 use super::files::FileContent;
 use super::symbols::{BOWL_CHAR, CONTENT_CHAR, CURRENT_VERSION, ESC_CHAR, FILE_CHAR, VERSION_CHAR};
@@ -131,6 +134,21 @@ impl BowlFile {
         }
 
         result
+    }
+
+    /// Retrieve the bowl.toml config from BowlFile
+    pub fn get_config(&self) -> Result<Config, String> {
+        for file in &self.files {
+            if file.file_path == "./bowl.toml" {
+                let content = from_utf8(&file.content)
+                    .map_err(|e| format!("Failed to decode config file: {}", e))?;
+                let config: Config = toml::from_str(content)
+                    .map_err(|e| format!("Error parsing bowl.toml: {}", e))?;
+                return Ok(config);
+            }
+        }
+
+        todo!()
     }
 }
 
