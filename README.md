@@ -6,7 +6,7 @@ This is a **WIP**. Some things here are just my musings about
 what the project *should* be rather than what it is at this
 current time. I believe this is a cool idea, and I'd like to 
 explore it. For current functionality, the
-[Creating a Template](#creating-a-new-template) section will
+[Creating a Template](#creating-a-template) section will
 tell you how to use Bowl.
 
 Bowl is a CLI tool for quickly bootstrapping applications from
