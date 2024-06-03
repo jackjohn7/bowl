@@ -3,6 +3,8 @@ use std::{fs::File, io::prelude::*, process::Command};
 use clap::Parser;
 use inquire::Text;
 
+use crate::templates::config::Config;
+
 const MD_TEMPLATE: &str = include_str!("../../templates/bowl.md");
 
 /// Arguments to be passed when running new command
@@ -35,7 +37,13 @@ pub fn handle_new(cmd: NewArgs) -> Result<(), String> {
     };
 
     // create bowl.toml
-    let _f = File::create("bowl.toml");
+    let mut f =
+        File::create("bowl.toml").map_err(|e| format!("Failed to create bowl.toml: {}", e))?;
+    let serialized = toml::to_string(&Config::new_default(project_name.clone()))
+        .map_err(|e| format!("Failed to serialize bowl.toml file: {}", e))?;
+
+    f.write(serialized.as_bytes())
+        .map_err(|e| format!("Failed to write bowl.toml file: {}", e))?;
 
     // prompt user for information about their project
     let md_file = Text::new("Name of your markdown file?")

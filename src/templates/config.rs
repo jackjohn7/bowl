@@ -7,6 +7,24 @@ pub struct Config {
     pub options: Options,
 }
 
+impl Config {
+    /// Create default config from template name
+    pub fn new_default(template_name: String) -> Self {
+        Self {
+            template: TemplateInfo {
+                name: template_name,
+                version: "0.0.1".into(),
+                source: None,
+                description: None,
+            },
+            options: Options {
+                ignore: None,
+                readme: default_readme(),
+            },
+        }
+    }
+}
+
 /// Configuration of bowl template
 #[derive(Serialize, Deserialize, Debug)]
 pub struct TemplateInfo {
