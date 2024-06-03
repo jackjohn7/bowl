@@ -5,7 +5,9 @@
 This is a **WIP**. Some things here are just my musings about
 what the project *should* be rather than what it is at this
 current time. I believe this is a cool idea, and I'd like to 
-explore it.
+explore it. For current functionality, the
+[Creating a Template](#Creating-A-New-Template) section will
+tell you how to use Bowl.
 
 Bowl is a CLI tool for quickly bootstrapping applications from
 predefined boilerplate templates. While this tool is written in
@@ -26,17 +28,17 @@ You can initialize boilerplate projects (script will prompt you
 for necessary data).
 
 ```
-bowl init bugwright/axum-askama
+bowl new axum-askama
 ```
 
-You can also define commands for your template.
+*Planned*: You can also define commands for your template.
 
 ```
 bowl run bugwright/axum-askama add tailwind
 bowl run bugwright/axum-askama add goose
 ```
 
-# Soup.rs (other repo)
+# Soup.rs (planned other repo)
 
 Soup acts as a public repository of bowl templates, although you
 can make some templates private. If you need templates to be
@@ -76,8 +78,15 @@ and metadata for your template. Make sure to configure the metadata
 so your template can be found easily! This is also where the version
 number of the template can be found (default 1.0.0).
 
-*some info about actually making a template...*
+At the moment, only locally saving bowl templates is supported. To
+do this, run the following:
 
 ```
-bowl publish --token <some_access_token>
+bowl publish --local
+```
+
+To then use your locally saved template, you can run the following:
+
+```
+bowl use my_template --local
 ```
