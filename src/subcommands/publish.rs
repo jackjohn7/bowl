@@ -7,7 +7,7 @@ use std::{
 use clap::Parser;
 
 use crate::{
-    files::file_entries,
+    files::{file_entries, save_file},
     templates::{bowlfile::BowlFile, config::Config, files::FileContent},
 };
 
@@ -17,6 +17,9 @@ pub struct PublishArgs {
     /// Where the bowlfile will be placed after it's built
     #[arg(short, long)]
     pub output: Option<String>,
+
+    #[arg(long, action)]
+    pub local: bool,
 }
 
 pub fn handle_publish(cmd: PublishArgs) -> Result<(), String> {
@@ -43,8 +46,6 @@ pub fn handle_publish(cmd: PublishArgs) -> Result<(), String> {
         Some(ignore) => ignore.iter().map(PathBuf::from).collect::<Vec<PathBuf>>(),
         None => Vec::new(),
     };
-
-    dbg!(&ignore);
 
     let files = fs::read_dir(".")
         .map_err(|e| e.to_string())?
@@ -77,9 +78,14 @@ pub fn handle_publish(cmd: PublishArgs) -> Result<(), String> {
         let _ = file
             .write_all(&bytes)
             .map_err(|e| format!("Failed to write bowlfile: {}", e));
+    } else if cmd.local {
+        save_file(format!("{}.bowl", config.template.name), bytes)?;
     } else {
-        // TODO: should be pushed to soup registry
+        // TODO: should be pushed to soup registry (local install only for now)
+        todo!("Soup server not built yet")
     }
+
+    println!("Bowl template built successfully!");
 
     Ok(())
 }
