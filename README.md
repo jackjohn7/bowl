@@ -38,6 +38,23 @@ bowl run bugwright/axum-askama add tailwind
 bowl run bugwright/axum-askama add goose
 ```
 
+# Installation
+
+## Build From Source
+
+Clone the project then `cd` into it.
+
+```bash
+git clone https://github.com/jackjohn7/bowl
+cd bowl
+```
+
+Build and install.
+
+```bash
+cargo install --path .
+```
+
 # Soup.rs (planned other repo)
 
 Soup acts as a public repository of bowl templates, although you
