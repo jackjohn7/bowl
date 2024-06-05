@@ -1,14 +1,14 @@
+use bowl_core::config::Config;
+use clap::Parser;
 use std::{
     fs::{self, DirEntry, File},
     io::Write,
     path::{Path, PathBuf},
 };
 
-use clap::Parser;
-
 use crate::{
     files::{file_entries, save_file_locally},
-    templates::{bowlfile::BowlFile, config::Config, files::FileContent},
+    templates::{bowlfile::BowlFile, files::FileContent},
 };
 
 /// Arguments to be passed when running publish command

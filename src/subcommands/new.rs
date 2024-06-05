@@ -3,7 +3,7 @@ use std::{fs::File, io::prelude::*, process::Command};
 use clap::Parser;
 use inquire::Text;
 
-use crate::templates::config::Config;
+use bowl_core::config::Config;
 
 const MD_TEMPLATE: &str = include_str!("../../templates/bowl.md");
 

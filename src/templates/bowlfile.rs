@@ -8,9 +8,9 @@
 //! *NOTE: This module will likely be broken into multiple later on*
 //! For example, I want to create separate files for versions of the BowlFile
 
+use bowl_core::config::Config;
 use std::str::from_utf8;
 
-use super::config::Config;
 use super::escape::{escape_content, unescape_content};
 use super::files::FileContent;
 use super::symbols::{BOWL_CHAR, CONTENT_CHAR, CURRENT_VERSION, ESC_CHAR, FILE_CHAR, VERSION_CHAR};

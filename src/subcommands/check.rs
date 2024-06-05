@@ -3,11 +3,13 @@ use std::{
     path::Path,
 };
 
+use bowl_core::config::Config;
+
 use clap::Parser;
 
 use crate::{
     files::file_entries,
-    templates::{bowlfile::BowlFile, config::Config, files::FileContent},
+    templates::{bowlfile::BowlFile, files::FileContent},
 };
 
 /// Arguments provided to the check command
